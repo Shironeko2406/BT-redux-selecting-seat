@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "../index.css";
-import {useSelector, useDispatch} from 'react-redux'
+
+import { useSelector, useDispatch } from "react-redux";
+import {toast} from 'react-toastify'
+
 
 const seatData = [
   {
@@ -186,12 +189,13 @@ const seatData = [
 ];
 
 const Seat = () => {
+  const [name, setName] = useState("");
+  const [numOfSeats, setNumOfSeats] = useState("");
 
   const dispatch = useDispatch();
 
-  const seatInfoArr = useSelector((state)=>state.seatReducer)
-  console.log(seatInfoArr)
-
+  const seatInfoArr = useSelector((state) => state.seatReducer);
+  console.log(seatInfoArr);
 
   return (
     <div>
@@ -208,7 +212,13 @@ const Seat = () => {
                   Name
                   <span>*</span>
                 </label>
-                <input type="text" id="Username" required />
+                <input
+                  type="text"
+                  id="Username"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
               <div className="agileits-right">
                 <label>
@@ -216,10 +226,46 @@ const Seat = () => {
                   Number of Seats
                   <span>*</span>
                 </label>
-                <input type="number" id="Numseats" required min={1} />
+                <input
+                  type="number"
+                  id="Numseats"
+                  required
+                  min={1}
+                  value={numOfSeats}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    // Kiểm tra nếu giá trị nhập vào là số không âm
+                    if (inputValue > 0) {
+                      // Cập nhật state numOfSeats với giá trị nhập vào
+                      setNumOfSeats(inputValue);
+                    }
+                  }}
+                />
               </div>
             </div>
-            <button>Start Selecting</button>
+            <button
+              onClick={() => {
+                if (!name.trim() || !numOfSeats.trim()) {
+                  toast.error("Hãy điền đầy đủ thông tin", {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                  });
+                } else{
+                  const action = {
+                    type: "ADD_BOOKING_INFO",
+                    payload: { name, numOfSeats },
+                  };
+                  dispatch(action);
+                }
+              }}
+            >
+              Start Selecting
+            </button>
           </div>
           {/* //input fields */}
           {/* seat availabilty list */}
