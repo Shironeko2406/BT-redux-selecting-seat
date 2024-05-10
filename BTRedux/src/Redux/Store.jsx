@@ -17,6 +17,7 @@ export const Store = configureStore({
               },
             ],
           };
+          
           break;
 
         default:

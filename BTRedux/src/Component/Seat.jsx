@@ -191,11 +191,33 @@ const seatData = [
 const Seat = () => {
   const [name, setName] = useState("");
   const [numOfSeats, setNumOfSeats] = useState("");
+  const [isSelectingStarted, setIsSelectingStarted] = useState(false);
+  const [selectedSeats, setSelectedSeats] = useState(0); // State để theo dõi số lượng ghế đã chọn
+
 
   const dispatch = useDispatch();
 
   const seatInfoArr = useSelector((state) => state.seatReducer);
   console.log(seatInfoArr);
+
+  
+  const handleSeatSelect = (seat) => {
+    if (selectedSeats < numOfSeats) {
+      // Chỉ cho phép chọn khi số lượng ghế đã chọn chưa đạt số lượng tối đa
+      setSelectedSeats(selectedSeats + 1);
+    } else {
+      // Hiển thị thông báo khi đã đạt số lượng tối đa
+      toast.error("Bạn đã chọn đủ số lượng ghế được phép!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
 
   return (
     <div>
@@ -261,6 +283,8 @@ const Seat = () => {
                     payload: { name, numOfSeats },
                   };
                   dispatch(action);
+                  setIsSelectingStarted(true)
+                  document.getElementById('notification').innerHTML= "<b style='margin-bottom:0px;background:#ff9800;letter-spacing:1px;'>Please Select your Seats NOW!</b>"
                 }
               }}
             >
@@ -314,6 +338,8 @@ const Seat = () => {
                             type="checkbox"
                             className="seats"
                             value={seat.soGhe}
+                            disabled={!isSelectingStarted || selectedSeats >= parseInt(numOfSeats)}
+                            onChange={() => handleSeatSelect(seat)}
                           />
                         </td>
                       </React.Fragment>
