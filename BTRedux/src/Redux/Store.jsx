@@ -14,11 +14,28 @@ export const Store = configureStore({
               {
                 name: action.payload.name,
                 numSeats: action.payload.numOfSeats,
+                selectedSeats: [],
               },
             ],
           };
-          
-          break;
+            
+
+          case "CONFIRM_INFO":
+            const { selectedSeats } = action.payload;
+  
+            // Update the latest booking information with selected seats
+            return {
+              ...state,
+              infoSeat: state.infoSeat.map((bookingInfo, index) => {
+                if (index === state.infoSeat.length - 1) { // Update only the last entry
+                  return {
+                    ...bookingInfo,
+                    selectedSeats,
+                  };
+                }
+                return bookingInfo;
+              }),
+            };
 
         default:
           break;

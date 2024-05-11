@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import "../index.css";
 
 import { useSelector, useDispatch } from "react-redux";
-import {toast} from 'react-toastify'
-
+import { toast } from "react-toastify";
 
 const seatData = [
   {
@@ -192,31 +191,55 @@ const Seat = () => {
   const [name, setName] = useState("");
   const [numOfSeats, setNumOfSeats] = useState("");
   const [isSelectingStarted, setIsSelectingStarted] = useState(false);
-  const [selectedSeats, setSelectedSeats] = useState(0); // State để theo dõi số lượng ghế đã chọn
-
+  const [selectedSeats, setSelectedSeats] = useState([]); // State để theo dõi số lượng ghế đã chọn
 
   const dispatch = useDispatch();
 
   const seatInfoArr = useSelector((state) => state.seatReducer);
   console.log(seatInfoArr);
 
-  
-  const handleSeatSelect = (seat) => {
-    if (selectedSeats < numOfSeats) {
-      // Chỉ cho phép chọn khi số lượng ghế đã chọn chưa đạt số lượng tối đa
-      setSelectedSeats(selectedSeats + 1);
+  const handleSeatSelect = (seat, isSelected) => {
+    console.log("🚀 ~ seat:", seat, isSelected);
+    if (isSelected) {
+      // nguoi dung chon ghe
+      if (selectedSeats.length < +numOfSeats) {
+        // Chỉ cho phép chọn khi số lượng ghế đã chọn chưa đạt số lượng tối đa
+        // setSelectedSeats(selectedSeats + 1);
+        const cloneSelectedSeats = [...selectedSeats, seat];
+        setSelectedSeats(cloneSelectedSeats);
+      } else {
+        // Hiển thị thông báo khi đã đạt số lượng tối đa
+        toast.error("Bạn đã chọn đủ số lượng ghế được phép!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
     } else {
-      // Hiển thị thông báo khi đã đạt số lượng tối đa
-      toast.error("Bạn đã chọn đủ số lượng ghế được phép!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      // nguoi dung bo chon ghe
+      const cloneSelectedSeats = selectedSeats.filter(
+        (it) => it.soGhe !== seat.soGhe
+      );
+      setSelectedSeats(cloneSelectedSeats);
     }
+  };
+
+  const handleConfirmSelection = () => {
+    // Lấy danh sách ghế được chọn từ state local của component
+    const selectedSeatNumbers = selectedSeats.map((seat) => seat.soGhe);
+
+    // Gửi action "CONFIRM_INFO" với danh sách ghế được chọn
+    const action = {
+      type: "CONFIRM_INFO",
+      payload: {
+        selectedSeats: selectedSeatNumbers,
+      },
+    };
+    dispatch(action);
   };
 
   return (
@@ -277,14 +300,15 @@ const Seat = () => {
                     draggable: true,
                     progress: undefined,
                   });
-                } else{
+                } else {
                   const action = {
                     type: "ADD_BOOKING_INFO",
                     payload: { name, numOfSeats },
                   };
                   dispatch(action);
-                  setIsSelectingStarted(true)
-                  document.getElementById('notification').innerHTML= "<b style='margin-bottom:0px;background:#ff9800;letter-spacing:1px;'>Please Select your Seats NOW!</b>"
+                  setIsSelectingStarted(true);
+                  document.getElementById("notification").innerHTML =
+                    "<b style='margin-bottom:0px;background:#ff9800;letter-spacing:1px;'>Please Select your Seats NOW!</b>";
                 }
               }}
             >
@@ -338,8 +362,15 @@ const Seat = () => {
                             type="checkbox"
                             className="seats"
                             value={seat.soGhe}
-                            disabled={!isSelectingStarted || selectedSeats >= parseInt(numOfSeats)}
-                            onChange={() => handleSeatSelect(seat)}
+                            disabled={!isSelectingStarted}
+                            onChange={(e) =>
+                              handleSeatSelect(seat, e.target.checked)
+                            }
+                            checked={
+                              selectedSeats.findIndex(
+                                (it) => it.soGhe === seat.soGhe
+                              ) !== -1
+                            }
                           />
                         </td>
                       </React.Fragment>
@@ -351,7 +382,7 @@ const Seat = () => {
             <div className="screen">
               <h2 className="wthree">Screen this way</h2>
             </div>
-            <button>Confirm Selection</button>
+            <button onClick={handleConfirmSelection}>Confirm Selection</button>
           </div>
           {/* //seat layout */}
           {/* details after booking displayed here */}
