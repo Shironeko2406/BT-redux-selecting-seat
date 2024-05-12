@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../index.css";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -192,6 +192,10 @@ const Seat = () => {
   const [numOfSeats, setNumOfSeats] = useState("");
   const [isSelectingStarted, setIsSelectingStarted] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState([]); // State để theo dõi số lượng ghế đã chọn
+  const [nameDisplay, setNameDisplay] = useState("");
+  const [numberDisplay, setNumberDisplay] = useState("");
+  const [seatsDisplay, setSeatsDisplay] = useState("");
+  const [isDataUpdated, setIsDataUpdated] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -232,15 +236,52 @@ const Seat = () => {
     // Lấy danh sách ghế được chọn từ state local của component
     const selectedSeatNumbers = selectedSeats.map((seat) => seat.soGhe);
 
-    // Gửi action "CONFIRM_INFO" với danh sách ghế được chọn
-    const action = {
-      type: "CONFIRM_INFO",
-      payload: {
-        selectedSeats: selectedSeatNumbers,
-      },
-    };
-    dispatch(action);
+    if (selectedSeatNumbers.length !== +numOfSeats) {
+      // Hiển thị thông báo lỗi nếu số lượng ghế chọn chưa đủ
+      toast.error("Bạn chưa chọn đủ số lượng ghế!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    } else {
+      // Gửi action "CONFIRM_INFO" với danh sách ghế được chọn
+      const action = {
+        type: "CONFIRM_INFO",
+        payload: {
+          selectedSeats: selectedSeatNumbers,
+        },
+      };
+      dispatch(action);
+
+      setIsDataUpdated(true);
+      toast.success("Xác thông tin nhân thành công", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
   };
+
+  const displayBooking = () => {
+    setNameDisplay(seatInfoArr.infoSeat.map((booking) => booking.name));
+    setNumberDisplay(seatInfoArr.infoSeat.map((booking) => booking.numSeats));
+    setSeatsDisplay(seatInfoArr.infoSeat.map((booking) => Object.keys(booking.selectedSeats)));
+  };
+
+  useEffect(() => {
+    if (isDataUpdated) {
+      displayBooking(); // Gọi hàm displayBooking khi dữ liệu được cập nhật
+      setIsDataUpdated(false); // Đặt lại trạng thái isDataUpdated về false
+    }
+  }, [isDataUpdated]); // useEffect sẽ chạy lại khi isDataUpdated thay đổi
 
   return (
     <div>
@@ -309,6 +350,15 @@ const Seat = () => {
                   setIsSelectingStarted(true);
                   document.getElementById("notification").innerHTML =
                     "<b style='margin-bottom:0px;background:#ff9800;letter-spacing:1px;'>Please Select your Seats NOW!</b>";
+                  toast.success("Thông tin được lưu thành công", {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                  });
                 }
               }}
             >
@@ -399,13 +449,25 @@ const Seat = () => {
                 </tr>
                 <tr>
                   <td>
-                    <textarea id="nameDisplay" defaultValue={""} />
+                    <textarea
+                      id="nameDisplay"
+                      defaultValue={nameDisplay}
+                      readOnly
+                    />
                   </td>
                   <td>
-                    <textarea id="NumberDisplay" defaultValue={""} />
+                    <textarea
+                      id="NumberDisplay"
+                      defaultValue={numberDisplay}
+                      readOnly
+                    />
                   </td>
                   <td>
-                    <textarea id="seatsDisplay" defaultValue={""} />
+                    <textarea
+                      id="seatsDisplay"
+                      defaultValue={seatsDisplay}
+                      readOnly
+                    />
                   </td>
                 </tr>
               </tbody>
